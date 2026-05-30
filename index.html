@@ -373,6 +373,61 @@
     border-radius: 1px;
   }
   .nd-resizeHandle-se:hover::after { border-color: rgba(255,255,255,0.8); }
+  .nd-warmup {
+    border: 1px solid;
+    border-radius: 14px;
+    padding: 16px 18px;
+    margin-bottom: 18px;
+  }
+  .nd-warmupLabel {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 12.5px; font-weight: 700; letter-spacing: 0.04em;
+    margin-bottom: 10px;
+  }
+  .nd-warmupIcon { font-size: 15px; }
+  .nd-warmupQ {
+    font-size: 15px; line-height: 1.75; color: var(--ink-1);
+    font-weight: 500;
+  }
+  .nd-warmupActions { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+  .nd-warmupBtn {
+    background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.14);
+    padding: 6px 13px; border-radius: 8px;
+    cursor: pointer; font-family: inherit;
+    font-size: 12.5px; font-weight: 500;
+    color: rgba(255,255,255,0.72);
+    transition: background .12s, color .12s, border-color .12s;
+  }
+  .nd-warmupBtn:hover { background: rgba(255,255,255,0.12); color: #fff; }
+  .nd-warmupHint {
+    margin-top: 11px;
+    padding: 9px 13px;
+    background: rgba(253, 230, 138, 0.1);
+    border-radius: 8px;
+    font-size: 13px; line-height: 1.65; color: var(--ink-2);
+  }
+  .nd-warmupAnswer {
+    margin-top: 11px;
+    padding: 10px 13px 11px 15px;
+    background: rgba(255,255,255,0.05);
+    border-left: 3px solid;
+    border-radius: 0 8px 8px 0;
+    font-size: 13.5px; line-height: 1.75; color: var(--ink-2);
+  }
+  .nd-warmupAnswerLabel {
+    font-size: 10.5px; font-weight: 700; letter-spacing: 0.1em;
+    text-transform: uppercase; margin-bottom: 4px;
+  }
+  .nd-warmupReveal {
+    display: block; width: 100%;
+    margin-top: 16px;
+    padding: 11px 16px; border: none; border-radius: 10px;
+    color: #fff; cursor: pointer; font-family: inherit;
+    font-size: 14px; font-weight: 600; letter-spacing: 0.03em;
+    transition: filter .12s, transform .08s;
+  }
+  .nd-warmupReveal:hover { filter: brightness(1.12); }
+  .nd-warmupReveal:active { transform: translateY(1px); }
   .nd-titleWrap { padding: 12px 22px 0; }
   .nd-title { font-size: 22px; font-weight: 700; letter-spacing: -0.01em; color: var(--ink-1); margin: 0 0 6px; }
   .nd-concept { font-size: 13px; color: var(--ink-3); line-height: 1.55; }

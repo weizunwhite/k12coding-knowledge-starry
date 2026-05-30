@@ -92,12 +92,54 @@ function Exercise({ ex, idx, theme }) {
   );
 }
 
+// Warmup card — 「先想一想」引入题：题面 + 可选提示 + 看参考答案 + 开始讲解
+// 软引导、可跳过：随时可点「开始讲解」展开下面的讲解内容。
+function WarmupCard({ warmup, theme, revealed, onReveal }) {
+  const [showHint, setShowHint] = useState(false);
+  const [showAnswer, setShowAnswer] = useState(false);
+  return (
+    <section className="nd-warmup"
+             style={{ borderColor: theme.soft, background: `linear-gradient(180deg, ${theme.soft}55, transparent)` }}>
+      <div className="nd-warmupLabel" style={{ color: theme.color }}>
+        <span className="nd-warmupIcon">🤔</span>先想一想
+      </div>
+      <div className="nd-warmupQ">{renderRich(warmup.q)}</div>
+      <div className="nd-warmupActions">
+        {warmup.hint && (
+          <button className="nd-warmupBtn" onClick={() => setShowHint(s => !s)}>
+            {showHint ? '收起提示' : '💡 提示'}
+          </button>
+        )}
+        <button className="nd-warmupBtn" onClick={() => setShowAnswer(s => !s)}>
+          {showAnswer ? '收起参考答案' : '看参考答案'}
+        </button>
+      </div>
+      {showHint && warmup.hint && (
+        <div className="nd-warmupHint">{renderRich(warmup.hint)}</div>
+      )}
+      {showAnswer && (
+        <div className="nd-warmupAnswer" style={{ borderLeftColor: theme.color }}>
+          <div className="nd-warmupAnswerLabel" style={{ color: theme.color }}>参考答案 · 点睛</div>
+          <div>{renderRich(warmup.answer)}</div>
+        </div>
+      )}
+      {!revealed && (
+        <button className="nd-warmupReveal" onClick={onReveal} style={{ background: theme.deep }}>
+          开始讲解 ▼
+        </button>
+      )}
+    </section>
+  );
+}
+
 function NodeDetail({ node, onClose, onJump, mastered, onToggleMastery }) {
   const theme = window.CODE_THEMES[node.theme];
   const history = (window.CODE_HISTORY || {})[node.id];
   const lesson = (window.CODE_LESSON || {})[node.id];
+  const warmup = lesson?.warmup;
   const aiAvailable = !!(window.claude && typeof window.claude.complete === 'function');
   const [tab, setTab] = useState('overview'); // 'overview' | 'ai'
+  const [lessonRevealed, setLessonRevealed] = useState(false); // 引入题后是否已展开讲解
   const [messages, setMessages] = useState([]); // {role: 'user'|'assistant', text}
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -245,6 +287,7 @@ function NodeDetail({ node, onClose, onJump, mastered, onToggleMastery }) {
     setMessages([]);
     setInput('');
     setTab('overview');
+    setLessonRevealed(false);
     if (scrollRef.current) scrollRef.current.scrollTop = 0;
   }, [node.id]);
 
@@ -341,6 +384,11 @@ function NodeDetail({ node, onClose, onJump, mastered, onToggleMastery }) {
       <div className="nd-body" ref={scrollRef}>
         {tab === 'overview' && (
           <div className="nd-overview">
+            {warmup && (
+              <WarmupCard warmup={warmup} theme={theme} revealed={lessonRevealed}
+                          onReveal={() => setLessonRevealed(true)} />
+            )}
+            {(!warmup || lessonRevealed) && (<>
             {history && (
               <section className="nd-section">
                 <div className="nd-sectionLabel nd-histLabel">
@@ -564,6 +612,7 @@ function NodeDetail({ node, onClose, onJump, mastered, onToggleMastery }) {
                 </div>
               </section>
             )}
+            </>)}
           </div>
         )}
 
