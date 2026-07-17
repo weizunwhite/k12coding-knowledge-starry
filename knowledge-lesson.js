@@ -126,7 +126,6 @@ function makeLesson(node) {
 
   return {
     warmup: CODE_WARMUP_BANK[node.id],
-    figure: CODE_FIGURE_BANK[node.id],
     intro: [
       `**${node.name}**：${node.concept}。`,
       node.explanation,
@@ -186,6 +185,10 @@ function makeLesson(node) {
     ],
   };
 }
+
+// 示意图独立注册表：与小课分离，lessons/ 分片整条覆盖 CODE_LESSON 时不会把图冲掉
+// （node-detail.jsx 渲染时取 lesson.figure || CODE_FIGURES[nodeId]）
+window.CODE_FIGURES = CODE_FIGURE_BANK;
 
 window.CODE_LESSON = Object.fromEntries(
   window.CODE_NODES.map(node => [node.id, makeLesson(node)])

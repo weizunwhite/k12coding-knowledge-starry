@@ -422,10 +422,10 @@ function NodeDetail({ node, onClose, onJump, mastered, onToggleMastery }) {
               )}
             </section>
 
-            {lesson?.figure && (
+            {(lesson?.figure || (window.CODE_FIGURES || {})[node.id]) && (
               <section className="nd-section">
                 <div className="nd-sectionLabel">图示</div>
-                <div className="nd-figureBox" dangerouslySetInnerHTML={{ __html: lesson.figure }} />
+                <div className="nd-figureBox" dangerouslySetInnerHTML={{ __html: lesson?.figure || window.CODE_FIGURES[node.id] }} />
               </section>
             )}
 
