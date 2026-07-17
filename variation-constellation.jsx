@@ -2,7 +2,9 @@
 // Now shows direction (animated flow particles), hierarchy (size = degree),
 // and lineage (hover/select a star highlights its ancestor & descendant chain).
 
-const STAR_W = 1400, STAR_H = 920;
+const STAR_W = 1400, STAR_H = 920;        // 初中星系区域（只看初中时的画布）
+const SENIOR_BAND_TOP = 1000;             // 高中「进阶星区」起始 y
+const FULL_H = 1500;                       // 初高中融合时的画布总高
 
 // Cluster centers per theme（5 个编程主题在画布上分散开）
 const CLUSTER_CENTERS = {
@@ -30,6 +32,30 @@ const STAR_POS = {};
       const radius = 48 * Math.sqrt(i);
       STAR_POS[node.id] = { x: c.cx + radius * Math.cos(angle), y: c.cy + radius * Math.sin(angle) };
     });
+  });
+})();
+
+// ───── 学段判断：是否高中节点 ─────
+const SENIOR_GRADE_SET = { '高一': true, '高二': true, '高三': true };
+function isSeniorNode(id) {
+  return !!SENIOR_GRADE_SET[(window.CODE_NODE_GRADE || {})[id]];
+}
+
+// ───── 高中节点自动布局：初中星系下方的「进阶星区」网格 ─────
+// 初中星位由上方 IIFE 螺旋布局排好；高中节点统一改排到下方网格带，
+// 同主题相邻成色块，跨学段连线从上方星系流向下方网格——视觉上「初中在上、高中在下、连线贯穿」。
+(function placeSeniorStars() {
+  const THEME_ORDER = { basics: 0, control: 1, structure: 2, paradigm: 3, algorithm: 4, application: 5 };
+  const seniors = window.CODE_NODES
+    .filter(n => isSeniorNode(n.id))
+    .sort((a, b) => (THEME_ORDER[a.theme] ?? 9) - (THEME_ORDER[b.theme] ?? 9) || (a.level || 1) - (b.level || 1));
+  const COLS = 8, X0 = 95, X1 = 1305, ROW_H = 108;
+  seniors.forEach((node, i) => {
+    const col = i % COLS, row = Math.floor(i / COLS);
+    STAR_POS[node.id] = {
+      x: X0 + (X1 - X0) * (COLS === 1 ? 0.5 : col / (COLS - 1)),
+      y: SENIOR_BAND_TOP + 70 + row * ROW_H,
+    };
   });
 })();
 
@@ -111,7 +137,7 @@ function computeLineage(id) {
 const COLOR_UP = '#7dd3fc';     // sky-300 — "what you need before"
 const COLOR_DOWN = '#fde68a';   // amber-200 — "what it unlocks"
 
-function ConstellationVariation({ onSelectNode, selectedId, mastered, searchQuery, themeFilter, onToggleMastery, hideHeader, recommended }) {
+function ConstellationVariation({ onSelectNode, selectedId, mastered, searchQuery, themeFilter, onToggleMastery, hideHeader, recommended, stageFilter = 'junior' }) {
   const [hover, setHover] = useState(null);
   const [now, setNow] = useState(0);
   const [focusMode, setFocusMode] = useState(true); // dim non-lineage on hover/select
@@ -156,11 +182,12 @@ function ConstellationVariation({ onSelectNode, selectedId, mastered, searchQuer
     if (!q) return null;
     const set = new Set();
     window.CODE_NODES.forEach(n => {
+      if (stageFilter !== 'all' && isSeniorNode(n.id)) return;
       if (n.name.toLowerCase().includes(q) || n.id.toLowerCase().includes(q) ||
           (n.concept && n.concept.toLowerCase().includes(q))) set.add(n.id);
     });
     return set;
-  }, [q]);
+  }, [q, stageFilter]);
   const searchContext = React.useMemo(() => {
     if (!searchMatches) return null;
     const related = new Set();
@@ -179,6 +206,7 @@ function ConstellationVariation({ onSelectNode, selectedId, mastered, searchQuer
   }, [recommended]);
 
   const themeOn = (theme) => !themeFilter || themeFilter[theme] !== false;
+  const stageOn = (id) => stageFilter === 'all' || !isSeniorNode(id);
 
   useEffect(() => {
     let raf;
@@ -197,7 +225,7 @@ function ConstellationVariation({ onSelectNode, selectedId, mastered, searchQuer
     let seed = 42;
     const rand = () => { seed = (seed * 9301 + 49297) % 233280; return seed / 233280; };
     for (let i = 0; i < 260; i++) {
-      arr.push({ x: rand() * STAR_W, y: rand() * STAR_H, r: rand() * 0.9 + 0.3, o: rand() * 0.5 + 0.2, ph: rand() });
+      arr.push({ x: rand() * STAR_W, y: rand() * FULL_H, r: rand() * 0.9 + 0.3, o: rand() * 0.5 + 0.2, ph: rand() });
     }
     return arr;
   }, []);
@@ -219,6 +247,7 @@ function ConstellationVariation({ onSelectNode, selectedId, mastered, searchQuer
   const renderEdge = (e, isCross) => {
     const a = STAR_POS[e.from], b = STAR_POS[e.to];
     if (!a || !b) return null;
+    if (stageFilter !== 'all' && (isSeniorNode(e.from) || isSeniorNode(e.to))) return null;
     const k = e.from + '→' + e.to;
     const fromNode = window.CODE_NODE_BY_ID[e.from];
     const toNode = window.CODE_NODE_BY_ID[e.to];
@@ -300,7 +329,7 @@ function ConstellationVariation({ onSelectNode, selectedId, mastered, searchQuer
       <div className="con-header">
         <div>
           <div className="con-eyebrow">C · 学习路径地图</div>
-          <h1 className="con-title">编程 · 知识星空</h1>
+          <h1 className="con-title">{stageFilter === 'all' ? '初中 + 高中编程' : '初中编程'} · 知识星空</h1>
           <p className="con-sub">每个主题是一片星座 · <span className="con-hi-up">流向</span>是「先学 → 后学」 · 点亮一颗星，看清它的来路与去路</p>
         </div>
         <div className="con-headerRight">
@@ -328,7 +357,7 @@ function ConstellationVariation({ onSelectNode, selectedId, mastered, searchQuer
 
       <div className="con-mapWrap" ref={mapWrapRef}
            onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}>
-        <svg viewBox={`0 0 ${STAR_W} ${STAR_H}`} className="con-svg" preserveAspectRatio="xMidYMid meet"
+        <svg viewBox={`0 0 ${STAR_W} ${stageFilter === 'all' ? FULL_H : STAR_H}`} className="con-svg" preserveAspectRatio="xMidYMid meet"
              style={{ transform: `translate(${view.tx}px, ${view.ty}px) scale(${view.scale})`, transformOrigin: '0 0' }}>
           <defs>
             {Object.entries(window.CODE_THEMES).map(([k, t]) => (
@@ -369,9 +398,23 @@ function ConstellationVariation({ onSelectNode, selectedId, mastered, searchQuer
             );
           })}
 
+          {/* 高中「进阶星区」分隔（仅融合模式）—— 编程进阶区颜色用 application 主题色 #e11d48 */}
+          {stageFilter === 'all' && (
+            <g>
+              <line x1={80} y1={SENIOR_BAND_TOP} x2={STAR_W - 80} y2={SENIOR_BAND_TOP}
+                    stroke="#e11d48" strokeOpacity={0.28} strokeDasharray="2 9" />
+              <text x={STAR_W / 2} y={SENIOR_BAND_TOP - 18} textAnchor="middle"
+                    fontSize={15} fill="#fb7185" fillOpacity={0.6}
+                    style={{ fontFamily: 'inherit', letterSpacing: '7px' }}>
+                高中 · 进阶星区
+              </text>
+            </g>
+          )}
+
           {/* Stars */}
           {window.CODE_NODES.map(n => {
             const p = STAR_POS[n.id]; if (!p) return null;
+            if (stageFilter !== 'all' && isSeniorNode(n.id)) return null;
             const theme = window.CODE_THEMES[n.theme];
             const sig = STAR_SIG[n.id];
             const tier = starTier(n.id);

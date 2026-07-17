@@ -2,12 +2,14 @@
 // 仅在首次使用时显示（localStorage 无 coding-user-profile）
 
 function OnboardingWelcome({ onComplete }) {
-  const [step, setStep] = useState(1);       // 1=难度选择, 2=快速标记
-  const [grade, setGrade] = useState(null);   // '入门'|'进阶'|'高阶'|'free'
+  const [step, setStep] = useState(1);       // 1=阶段选择, 2=快速标记
+  const [grade, setGrade] = useState(null);   // '入门'|'进阶'|'高阶'|'g1'|'g2'|'g3'|'free'
   const [marked, setMarked] = useState({});
 
-  // 编程不分年级，按难度档累进显示（入门 ≤ 进阶 ≤ 高阶）
-  const gradeRank = grade === '入门' ? 1 : grade === '进阶' ? 2 : grade === '高阶' ? 3 : 9;
+  // 难度档 + 高中年级统一映射到 rank：
+  // 入门/进阶/高阶 = 1/2/3（初中难度档），高一/高二/高三 = 4/5/6（选了即开启初高中融合）
+  const GRADE_VALUE_RANK = { '入门': 1, '进阶': 2, '高阶': 3, 'g1': 4, 'g2': 5, 'g3': 6 };
+  const gradeRank = GRADE_VALUE_RANK[grade] || 9;
   const markableNodes = React.useMemo(() => {
     if (!grade || grade === 'free') return [];
     const G = window.CODE_NODE_GRADE || {}, R = window.CODE_GRADE_RANK || {};
@@ -29,7 +31,7 @@ function OnboardingWelcome({ onComplete }) {
     setGrade(g);
     if (g === 'free') {
       // 自由探索模式直接完成
-      const profile = { grade: g, createdAt: Date.now() };
+      const profile = { grade: g, gradeRank: 0, createdAt: Date.now() };
       onComplete(profile, null);
     } else {
       setStep(2);
@@ -43,7 +45,7 @@ function OnboardingWelcome({ onComplete }) {
 
   // 完成标记
   const handleFinish = () => {
-    const profile = { grade, createdAt: Date.now() };
+    const profile = { grade, gradeRank: GRADE_VALUE_RANK[grade] || 0, createdAt: Date.now() };
     const masteredMap = Object.keys(marked).reduce((acc, id) => {
       if (marked[id]) acc[id] = true;
       return acc;
@@ -53,7 +55,7 @@ function OnboardingWelcome({ onComplete }) {
 
   // 跳过标记（新手）
   const handleSkip = () => {
-    const profile = { grade, createdAt: Date.now() };
+    const profile = { grade, gradeRank: GRADE_VALUE_RANK[grade] || 0, createdAt: Date.now() };
     onComplete(profile, null);
   };
 
@@ -61,6 +63,9 @@ function OnboardingWelcome({ onComplete }) {
     '入门': '编程入门',
     '进阶': '编程进阶',
     '高阶': '编程高阶',
+    'g1': '高一',
+    'g2': '高二',
+    'g3': '高三',
   };
   const gradeShort = { '入门': '入门', '进阶': '进阶', '高阶': '高阶' };
 
@@ -73,13 +78,21 @@ function OnboardingWelcome({ onComplete }) {
             <h1 className="ob-title">欢迎来到知识星空</h1>
             <p className="ob-desc">
               编程与算法的 {window.CODE_NODES.length} 个知识点，按「依赖关系」连成星座。
-              <br />选择你的当前阶段，我来推荐学习路线。
+              <br />选择你的当前阶段，我来推荐学习路线（初中难度档默认只看初中，高中年级自动开启初高中融合）。
             </p>
             <div className="ob-grades">
               {['入门', '进阶', '高阶'].map(g => (
                 <button key={g} className="ob-gradeBtn" onClick={() => handleGradeSelect(g)}>
                   <span className="ob-gradeNum">{gradeShort[g]}</span>
                   <span className="ob-gradeLabel">{gradeLabels[g]}</span>
+                </button>
+              ))}
+            </div>
+            <div className="ob-grades" style={{ marginTop: 8 }}>
+              {['g1', 'g2', 'g3'].map(g => (
+                <button key={g} className="ob-gradeBtn" onClick={() => handleGradeSelect(g)}>
+                  <span className="ob-gradeNum" style={{ fontSize: '1.15rem' }}>{gradeLabels[g]}</span>
+                  <span className="ob-gradeLabel">高中</span>
                 </button>
               ))}
             </div>
