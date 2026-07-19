@@ -1,5 +1,5 @@
-// 节点配图注册表 · 图片在 public/media/，均来自 Wikimedia Commons（公有领域或 CC 授权）
-// credit 注明作者与许可；由 grok-agent skill 的 download-commons.cjs 生成
+// 节点配图注册表 · 图片在 public/media/
+// 实景图来自 Wikimedia Commons（credit 注明作者与许可）；示意图为 AI 生成（Grok image_gen）
 window.CODE_MEDIA = {
   "variable-assign": { file: "media/variable-assign.jpg", title: "磁芯存储器 · 早期「变量」的物理载体", credit: "José Luis Briz Velasco · Wikimedia Commons · CC BY-SA 4.0" },
   "data-types": { file: "media/data-types.jpg", title: "霍尔瑞斯穿孔卡 · 不同字段即不同类型的数据", credit: "Herman Hollerith · Wikimedia Commons · Public domain" },
@@ -42,4 +42,19 @@ window.CODE_MEDIA = {
   "greedy": { file: "media/greedy.png", title: "硬币找零：贪心策略的生活原型", credit: "Confocal_measurement_of_1-euro-star_3d.png: Dr. Schorsch EUR · Wikimedia Commons · CC BY-SA 3.0" },
   "dp-intro": { file: "media/dp-intro.jpg", title: "Richard Bellman：动态规划创立者", credit: "Abraham H. Haddad · Wikimedia Commons · CC BY-SA 3.0" },
   "design-patterns": { file: "media/design-patterns.jpg", title: "Erich Gamma：《设计模式》作者之一", credit: "Erich Berger · Wikimedia Commons · CC BY-SA 4.0" },
+  "operators": { file: "media/operators.jpg", title: "运算符与表达式（示意图）", credit: "AI 生成教学示意图 · Grok image_gen" },
+  "comments-style": { file: "media/comments-style.jpg", title: "注释与代码风格（示意图）", credit: "AI 生成教学示意图 · Grok image_gen" },
+  "while-loop": { file: "media/while-loop.jpg", title: "while 循环（示意图）", credit: "AI 生成教学示意图 · Grok image_gen" },
+  "for-loop": { file: "media/for-loop.jpg", title: "for 循环（示意图）", credit: "AI 生成教学示意图 · Grok image_gen" },
+  "nested-loop": { file: "media/nested-loop.jpg", title: "嵌套循环（示意图）", credit: "AI 生成教学示意图 · Grok image_gen" },
+  "break-continue": { file: "media/break-continue.jpg", title: "break 与 continue（示意图）", credit: "AI 生成教学示意图 · Grok image_gen" },
+  "set-type": { file: "media/set-type.jpg", title: "集合（示意图）", credit: "AI 生成教学示意图 · Grok image_gen" },
+  "linked-list": { file: "media/linked-list.jpg", title: "链表（示意图）", credit: "AI 生成教学示意图 · Grok image_gen" },
+  "params-return": { file: "media/params-return.jpg", title: "参数与返回值（示意图）", credit: "AI 生成教学示意图 · Grok image_gen" },
+  "scope": { file: "media/scope.jpg", title: "作用域（示意图）", credit: "AI 生成教学示意图 · Grok image_gen" },
+  "complexity-advanced": { file: "media/complexity-advanced.jpg", title: "算法复杂度分析进阶（示意图）", credit: "AI 生成教学示意图 · Grok image_gen" },
+  "divide-conquer": { file: "media/divide-conquer.jpg", title: "分治算法（示意图）", credit: "AI 生成教学示意图 · Grok image_gen" },
+  "dp-advanced": { file: "media/dp-advanced.jpg", title: "动态规划进阶（示意图）", credit: "AI 生成教学示意图 · Grok image_gen" },
+  "heap": { file: "media/heap.jpg", title: "堆与优先队列（示意图）", credit: "AI 生成教学示意图 · Grok image_gen" },
+  "union-find": { file: "media/union-find.jpg", title: "并查集（示意图）", credit: "AI 生成教学示意图 · Grok image_gen" },
 };
