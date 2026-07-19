@@ -116,6 +116,8 @@ await import('../knowledge-history.js');
 await import('../knowledge-lesson.js');
 await import('../knowledge-subnodes.js');
 await import('../knowledge-quiz-seed.js');
+// 节点配图注册表（public/media/）；空表时详情页不渲染配图区块
+await import('../code-media.js');
 await import('../interactive-widgets.jsx');
 await import('../assessment.jsx');
 await import('../node-detail.jsx');

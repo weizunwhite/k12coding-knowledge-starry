@@ -6,8 +6,10 @@ const root = path.resolve(__dirname, '..');
 const ctx = { window: {} };
 vm.createContext(ctx);
 
-for (const file of ['knowledge-data.js', 'knowledge-history.js', 'knowledge-lesson.js', 'knowledge-subnodes.js', 'knowledge-quiz-seed.js']) {
-  vm.runInContext(fs.readFileSync(path.join(root, file), 'utf8'), ctx, { filename: file });
+for (const file of ['knowledge-data.js', 'knowledge-history.js', 'knowledge-lesson.js', 'knowledge-subnodes.js', 'knowledge-quiz-seed.js', 'code-media.js']) {
+  const full = path.join(root, file);
+  if (!fs.existsSync(full)) continue; // code-media.js 可选：不存在则按空注册表处理
+  vm.runInContext(fs.readFileSync(full, 'utf8'), ctx, { filename: file });
 }
 
 // ── 分片覆盖防丢字段：快照基础版 CODE_LESSON 每个节点已有的字段 ──
@@ -136,6 +138,32 @@ for (const [nodeId, svg] of Object.entries(figures)) {
   if (typeof svg !== 'string' || !/^<svg[^>]*viewBox/.test(svg) || !svg.trim().endsWith('</svg>')) fail(`Figure ${nodeId} is not a well-formed inline <svg>`);
 }
 
+// ── 配图校验：CODE_MEDIA 键↔public/media 文件双向、>5KB、credit 非空 ──
+// skip 节点不在注册表中即可豁免；空注册表合法（下载前）
+const media = w.CODE_MEDIA || {};
+let mediaCount = 0;
+if (media && typeof media === 'object') {
+  mediaCount = Object.keys(media).length;
+  for (const [id, m] of Object.entries(media)) {
+    if (!ids.has(id)) fail(`Media uses unknown node id: ${id}`);
+    if (!m || !m.file || !m.title) { fail(`Media ${id} missing file/title`); continue; }
+    if (!m.credit) fail(`Media ${id} missing credit (版权来源必填)`);
+    // 路径约定：file 为 "media/xxx.jpg"，实体在 public/media/
+    const abs = path.join(root, 'public', m.file);
+    if (!fs.existsSync(abs)) fail(`Media ${id} file not found: public/${m.file}`);
+    else if (fs.statSync(abs).size < 5 * 1024) fail(`Media ${id} file too small (<5KB): public/${m.file}`);
+  }
+  // 反向：media 目录里不该有未登记的孤儿文件
+  const mediaDir = path.join(root, 'public/media');
+  if (fs.existsSync(mediaDir)) {
+    const registered = new Set(Object.values(media).map(m => path.basename(m.file)));
+    for (const f of fs.readdirSync(mediaDir)) {
+      if (f.startsWith('_') || f.startsWith('.')) continue; // 日志等辅助文件
+      if (!registered.has(f)) warning(`Orphan media file (not in CODE_MEDIA): public/media/${f}`);
+    }
+  }
+}
+
 // ── 内容覆盖率报告（不阻塞，只提醒缺口在哪）──
 function coverage(label, has) {
   const missing = nodes.filter(n => !has(n)).map(n => n.id);
@@ -147,6 +175,7 @@ const coverageReport = [
   coverage('quiz≥2 ', n => Array.isArray(quiz[n.id]) && quiz[n.id].length >= 2),
   coverage('warmup ', n => lessons[n.id] && lessons[n.id].warmup),
   coverage('figure ', n => figures[n.id] || (lessons[n.id] && lessons[n.id].figure)),
+  coverage('media  ', n => !!media[n.id]),
 ];
 
 if (warn.length) {
@@ -160,3 +189,4 @@ if (errors.length) {
 
 console.log('内容覆盖率:\n  ' + coverageReport.join('\n  '));
 console.log(`Data OK: ${nodes.length} nodes, ${edges.length} edges, ${Object.keys(lessons).length} lessons, ${Object.values(quiz).reduce((s, v) => s + v.length, 0)} quiz questions, ${Object.keys(figures).length} figures.`);
+console.log(`Media: ${mediaCount}/${nodes.length} nodes have images.`);
