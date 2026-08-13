@@ -378,9 +378,12 @@ function NodeDetail({ node, onClose, onJump, mastered, onToggleMastery }) {
       <div className="nd-tabs">
         <button className={'nd-tab' + (tab === 'overview' ? ' on' : '')} onClick={() => setTab('overview')}>详解</button>
         <button className={'nd-tab' + (tab === 'quiz' ? ' on' : '')} onClick={() => setTab('quiz')}>测验</button>
-        <button className={'nd-tab' + (tab === 'ai' ? ' on' : '')} onClick={() => setTab('ai')}>
-          <span className="nd-aiIcon" aria-hidden>✦</span> AI 答疑
-        </button>
+        {/* AI 答疑：仅在后端可用时出现，未接后端时不给学生看半成品入口 */}
+        {aiAvailable && (
+          <button className={'nd-tab' + (tab === 'ai' ? ' on' : '')} onClick={() => setTab('ai')}>
+            <span className="nd-aiIcon" aria-hidden>✦</span> AI 答疑
+          </button>
+        )}
       </div>
 
       <div className="nd-body" ref={scrollRef}>
@@ -637,7 +640,7 @@ function NodeDetail({ node, onClose, onJump, mastered, onToggleMastery }) {
           <window.NodeQuiz node={node} theme={theme} />
         )}
 
-        {tab === 'ai' && (
+        {tab === 'ai' && aiAvailable && (
           <div className="nd-ai">
             {!aiAvailable && (
               <div className="nd-aiUnavailable">
@@ -684,7 +687,7 @@ function NodeDetail({ node, onClose, onJump, mastered, onToggleMastery }) {
         )}
       </div>
 
-      {tab === 'ai' && (
+      {tab === 'ai' && aiAvailable && (
         <div className="nd-aiInputWrap">
           <input
             className="nd-aiInput"
