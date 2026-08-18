@@ -148,6 +148,11 @@ export default defineConfig(({ mode }) => {
   const deepSeekApi = createDeepSeekApi(env);
 
   return {
+    // 挂载到官网子路径 www.0oneup.com/courses/coding。
+    // 必须用绝对 base 而不是 './'：相对路径依赖尾斜杠，在 /courses/coding（无尾斜杠）下
+    // ./assets/x.js 会解析成 /courses/assets/x.js 少一级而 404；Next 默认又会剥掉尾斜杠，
+    // 靠重定向补会死循环。老域名直接访问的兼容由 vercel.json 的 rewrite 兜住。
+    base: '/courses/coding/',
     plugins: [
       react({
         jsxRuntime: 'classic',
