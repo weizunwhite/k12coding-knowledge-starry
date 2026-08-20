@@ -192,10 +192,25 @@ function NodeDetail({ node, onClose, onJump, mastered, onToggleMastery }) {
     return { x, y, width, height };
   };
 
+  // 记住上次调过的尺寸。只记 width/height 不记 x/y——
+  // 位置跟视口强相关，换屏幕后原样复原会把面板放到屏外。
+  const readSavedSize = () => {
+    try {
+      const v = JSON.parse(localStorage.getItem('coding-panel-size') || 'null');
+      if (v && v.width > 0 && v.height > 0) return v;
+    } catch {}
+    return null;
+  };
+
   const getDefaultPanelRect = () => {
     const bounds = getPanelBounds();
-    const width = Math.min(520, Math.max(minPanelWidth, bounds.width - panelInset * 2));
-    const height = Math.max(minPanelHeight, bounds.height - 32);
+    const saved = readSavedSize();
+    const width = saved
+      ? Math.min(saved.width, Math.max(minPanelWidth, bounds.width - panelInset * 2))
+      : Math.min(520, Math.max(minPanelWidth, bounds.width - panelInset * 2));
+    const height = saved
+      ? Math.max(minPanelHeight, Math.min(saved.height, bounds.height - panelInset * 2))
+      : Math.max(minPanelHeight, bounds.height - 32);
     return clampPanelRect({
       x: bounds.width - width - 16,
       y: 16,
@@ -203,6 +218,26 @@ function NodeDetail({ node, onClose, onJump, mastered, onToggleMastery }) {
       height,
     });
   };
+
+  // 挂载时应用上次保存的尺寸。
+  // panelRect 为 null 时组件不套内联样式、宽度走 CSS 默认值，
+  // 而 getDefaultPanelRect() 只在开始拖拽时才被调用——所以必须在这里主动触发一次，
+  // 否则尺寸只是存了却永远读不回来。
+  useEffect(() => {
+    if (isMobile) return;
+    if (!readSavedSize()) return;
+    setPanelRect(getDefaultPanelRect());
+    // 只在首次挂载时恢复，之后由用户拖拽决定
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (!panelRect) return;
+    try {
+      localStorage.setItem('coding-panel-size',
+        JSON.stringify({ width: panelRect.width, height: panelRect.height }));
+    } catch {}
+  }, [panelRect]);
 
   const stopPointerAction = () => {
     pointerActionRef.current = null;
