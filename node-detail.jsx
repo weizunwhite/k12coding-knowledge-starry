@@ -223,11 +223,24 @@ function NodeDetail({ node, onClose, onJump, mastered, onToggleMastery }) {
       }));
       return;
     }
-    setPanelRect(clampPanelRect({
-      ...action.rect,
-      width: action.rect.width + (action.dir.includes('e') ? dx : 0),
-      height: action.rect.height + (action.dir.includes('s') ? dy : 0),
-    }));
+    // 四个方向都支持。往左/上拖时要同时改 x/y 和 width/height——
+    // 面板默认贴着屏幕右缘，只有拖左边缘才能变宽，这是最常用的方向。
+    const d = action.dir;
+    let { x, y, width, height } = action.rect;
+    if (d.includes('e')) width = action.rect.width + dx;
+    if (d.includes('s')) height = action.rect.height + dy;
+    if (d.includes('w')) {
+      // 夹住最小宽度，避免继续往右拖时面板位置乱跳
+      const nextWidth = Math.max(minPanelWidth, action.rect.width - dx);
+      x = action.rect.x + (action.rect.width - nextWidth);
+      width = nextWidth;
+    }
+    if (d.includes('n')) {
+      const nextHeight = Math.max(minPanelHeight, action.rect.height - dy);
+      y = action.rect.y + (action.rect.height - nextHeight);
+      height = nextHeight;
+    }
+    setPanelRect(clampPanelRect({ x, y, width, height }));
   };
 
   const startPanelDrag = (e) => {
@@ -708,6 +721,11 @@ function NodeDetail({ node, onClose, onJump, mastered, onToggleMastery }) {
           <div className="nd-resizeHandle nd-resizeHandle-e" onPointerDown={(e) => startPanelResize('e', e)} />
           <div className="nd-resizeHandle nd-resizeHandle-s" onPointerDown={(e) => startPanelResize('s', e)} />
           <div className="nd-resizeHandle nd-resizeHandle-se" onPointerDown={(e) => startPanelResize('se', e)} />
+          {/* 左边缘是把面板拖宽的主要方向（面板贴右缘，往右没有余量） */}
+          <div className="nd-resizeHandle nd-resizeHandle-w" onPointerDown={(e) => startPanelResize('w', e)} />
+          <div className="nd-resizeHandle nd-resizeHandle-n" onPointerDown={(e) => startPanelResize('n', e)} />
+          <div className="nd-resizeHandle nd-resizeHandle-sw" onPointerDown={(e) => startPanelResize('sw', e)} />
+          <div className="nd-resizeHandle nd-resizeHandle-nw" onPointerDown={(e) => startPanelResize('nw', e)} />
         </>
       )}
     </div>

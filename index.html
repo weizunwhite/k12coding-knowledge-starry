@@ -373,6 +373,40 @@
     border-radius: 1px;
   }
   .nd-resizeHandle-se:hover::after { border-color: rgba(255,255,255,0.8); }
+  /* 左边缘：面板贴着屏幕右缘，往右没有余量，拖左边才是变宽的主要方式。
+     做得比右边缘宽一些（14px）并给一个可见的提示条，否则用户不知道能拖。 */
+  .nd-resizeHandle-w {
+    top: 48px; left: 0; bottom: 22px;
+    width: 14px;
+    cursor: ew-resize;
+  }
+  .nd-resizeHandle-w::after {
+    content: "";
+    position: absolute;
+    left: 4px; top: 50%;
+    transform: translateY(-50%);
+    width: 3px; height: 42px;
+    border-radius: 2px;
+    background: rgba(255,255,255,0.18);
+    transition: background .15s;
+  }
+  .nd-resizeHandle-w:hover::after { background: rgba(255,255,255,0.55); }
+  .nd-resizeHandle-n {
+    left: 22px; right: 22px; top: 0;
+    height: 8px;
+    cursor: ns-resize;
+  }
+  .nd-resizeHandle-sw {
+    left: 0; bottom: 0;
+    width: 18px; height: 18px;
+    cursor: nesw-resize;
+  }
+  .nd-resizeHandle-nw {
+    left: 0; top: 0;
+    width: 18px; height: 18px;
+    cursor: nwse-resize;
+  }
+
   .nd-warmup {
     border: 1px solid;
     border-radius: 14px;
