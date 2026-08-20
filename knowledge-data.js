@@ -34,7 +34,7 @@ window.CODE_NODES = [
     explanation:'运算符把数据组合成表达式，得到新值。优先级与数学类似，乘除先于加减，比较运算返回布尔值。除法有 / （得小数）和 // （取整）两种，取模 % 用来判断整除/奇偶。',
     example:'(3+4)*2 等于 14；7 // 2 等于 3，7 % 2 等于 1；5 > 3 and 2 < 4 等于 True。',
     connections:['boolean-cond','if-else'] },
-  { id:'comments-style', name:'注释与代码风格', theme:'basics', level:1, prereqs:[],
+  { id:'comments-style', name:'注释与代码风格', theme:'basics', level:1, prereqs:['variable-assign'],
     concept:'用 # 写说明、给变量起有意义的名字、保持缩进与排版整洁',
     explanation:'代码是写给人看的，机器只是顺带执行。好的注释解释"为什么这么做"，不重复"做了什么"。Python 用缩进表示代码块——同一层缩进必须一致，否则报错。',
     example:'# 计算总分\\nscore = math + english + chinese  # 注释解释做什么\\n好的命名：student_count 比 n 易懂。',

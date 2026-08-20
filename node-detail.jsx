@@ -5,6 +5,17 @@
 //   · AI 答疑 — uses window.claude.complete
 // Receives: node, onClose, onJump(id) — for clicking a connected node.
 
+// 配图路径修正：数据文件里写的是 media/xxx.jpg（相对路径），而页面挂在
+// /courses/<课程>（无尾斜杠）之下，浏览器会把它解析成 /courses/media/xxx.jpg —— 少一层，必然 404。
+// 统一拼上构建时的 base（vite.config 里的 base，即 /courses/<课程>/）。
+// 老子域名（xxx.0oneup.com）走各站 vercel.json 的 rewrite，同一路径同样能取到图。
+const mediaUrl = (p) => {
+  if (!p) return p;
+  if (/^(https?:)?\/\//.test(p) || String(p).startsWith('data:')) return p;  // 外链原样返回
+  const base = import.meta.env.BASE_URL || '/';
+  return base.replace(/\/+$/, '') + '/' + String(p).replace(/^\/+/, '');
+};
+
 const { useState, useRef, useEffect } = React;
 
 // KaTeX wrapper: render a block of LaTeX
@@ -446,7 +457,7 @@ function NodeDetail({ node, onClose, onJump, mastered, onToggleMastery }) {
             {mediaEntry && mediaEntry.file && (
               <section className="nd-section nd-media">
                 <img
-                  src={'/' + String(mediaEntry.file).replace(/^\//, '')}
+                  src={mediaUrl(mediaEntry.file)}
                   alt={mediaEntry.title || node.name}
                   loading="lazy"
                   className="nd-mediaImg"
