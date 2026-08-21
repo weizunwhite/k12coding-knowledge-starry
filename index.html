@@ -480,7 +480,6 @@
   }
   .nd-tab:hover { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.75); }
   .nd-tab.on { background: rgba(255,255,255,0.15); color: #fff; }
-  .nd-aiIcon { font-size: 11px; opacity: 0.85; }
 
   .nd-body { flex: 1; overflow-y: auto; padding: 14px 22px 0; }
   .nd-body::-webkit-scrollbar { width: 6px; }
@@ -946,31 +945,6 @@
   .app-mistakeBadge { background: #dc2626; color: #fff; padding: 1px 7px; border-radius: 999px; font-size: 11px; font-weight: 700; }
 
   /* AI tab */
-  .nd-ai { display: flex; flex-direction: column; gap: 12px; padding-bottom: 16px; }
-  .nd-aiWelcome { padding: 6px 0 4px; }
-  .nd-aiUnavailable { padding: 6px 0 4px; }
-  .nd-aiUnavailableText {
-    font-size: 13px; line-height: 1.7; color: var(--ink-3);
-    background: var(--line-soft); border-radius: 9px; padding: 10px 12px;
-  }
-  .nd-aiUnavailableText code { font-family: var(--font-mono); font-size: 12px; color: var(--ink-2); }
-  .nd-aiAvatar {
-    width: 32px; height: 32px; border-radius: 8px;
-    background: linear-gradient(135deg, #1e293b, #475569);
-    color: #fff; display: flex; align-items: center; justify-content: center;
-    font-size: 14px; margin-bottom: 10px;
-  }
-  .nd-aiHello { font-size: 14px; color: var(--ink-1); margin-bottom: 10px; }
-  .nd-aiSuggestions { display: flex; flex-direction: column; gap: 6px; }
-  .nd-aiSuggest {
-    text-align: left;
-    background: rgba(255,255,255,0.04);
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 8px; padding: 8px 12px;
-    font-family: inherit; font-size: 13px; color: var(--ink-2);
-    cursor: pointer; transition: background .12s, border-color .12s;
-  }
-  .nd-aiSuggest:hover { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.2); }
 
   .nd-msg { display: flex; gap: 8px; align-items: flex-start; }
   .nd-msg.user { justify-content: flex-end; }
@@ -997,24 +971,6 @@
     30% { opacity: 1; transform: scale(1.1); }
   }
 
-  .nd-aiInputWrap { display: flex; gap: 6px; padding: 12px 22px 18px; border-top: 1px solid rgba(255,255,255,0.08); }
-  .nd-aiInput {
-    flex: 1; padding: 10px 13px;
-    border: 1px solid rgba(255,255,255,0.12); border-radius: 9px;
-    font-family: inherit; font-size: 13.5px;
-    background: rgba(255,255,255,0.06); color: #f0f0f3;
-    outline: none; transition: border-color .12s;
-  }
-  .nd-aiInput:focus { border-color: rgba(255,255,255,0.3); }
-  .nd-aiInput::placeholder { color: rgba(255,255,255,0.3); }
-  .nd-aiSend {
-    width: 36px; height: 36px; border-radius: 9px;
-    background: rgba(255,255,255,0.15); color: #fff; border: 0;
-    cursor: pointer; font-size: 15px; font-weight: 600;
-    transition: background .12s, transform .12s;
-  }
-  .nd-aiSend:hover:not(:disabled) { transform: translateY(-1px); }
-  .nd-aiSend:disabled { cursor: not-allowed; }
 
   /* Mastery toggle button — floats above detail panel */
   .nd-masterToggle {

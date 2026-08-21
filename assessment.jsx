@@ -103,48 +103,8 @@ function NodeQuiz({ node, theme }) {
   const [picked, setPicked] = useStateA(null);
   const [answers, setAnswers] = useStateA([]);
   const [err, setErr] = useStateA(null);
-  const aiAvailable = !!(window.claude && typeof window.claude.complete === 'function');
   const seed = (window.CODE_QUIZ_SEED || {})[node.id];
 
-  const generate = async () => {
-    if (!aiAvailable) {
-      setErr('DeepSeek 暂未启用：请配置 DEEPSEEK_API_KEY 后重启服务。');
-      return;
-    }
-    setState('loading');
-    setErr(null);
-    const lesson = (window.CODE_LESSON || {})[node.id];
-    const ctx = lesson ? `\n参考讲解: ${(lesson.intro || []).join(' ')}\n公式: ${(lesson.formulas || []).map(f => f.name + ' ' + f.latex).join('; ')}\n常见易错: ${(lesson.pitfalls || []).join(' / ')}` : '';
-    const prompt = `你是编程命题专家。请就「${node.name}」这个知识点出 3 道单选题，难度依次：基础 / 中等 / 进阶。${ctx}
-
-要求：
-- 每题 4 个选项，仅 1 个正确
-- 用 $...$ 表示行内 LaTeX 公式（如 $x^2 + 1$）
-- 解析要简短清晰、点出关键
-- 解析里可以使用 **加粗** 强调关键词
-- 题目中文，避免冷僻情境
-
-严格只返回 JSON（不要 markdown 围栏、不要解释）：
-{
-  "questions": [
-    { "q": "题目", "options": ["A","B","C","D"], "correct": 0, "explanation": "解析" },
-    ...
-  ]
-}`;
-    try {
-      const text = await window.claude.complete(prompt);
-      const j = extractJSON(text);
-      if (!j || !Array.isArray(j.questions) || j.questions.length === 0) throw new Error('AI 返回格式异常');
-      setQuestions(j.questions);
-      setCurrent(0);
-      setAnswers([]);
-      setPicked(null);
-      setState('answering');
-    } catch (e) {
-      setErr(e.message || '生成失败，请重试');
-      setState('start');
-    }
-  };
 
   const startSeed = () => {
     if (!seed || !seed.length) return;
@@ -187,8 +147,7 @@ function NodeQuiz({ node, theme }) {
   if (state === 'start') {
     const count = seed ? seed.length : 3;
     const sub = seed
-      ? '题库出题（离线可用），答错自动收进错题本'
-      : (aiAvailable ? 'DeepSeek 现场出题，答错自动收进错题本' : '本节点暂无离线题库');
+      ? '题库出题（离线可用），答错自动收进错题本' : '本节点暂无离线题库';
     return (
       <div className="qz-start">
         <div className="qz-startIcon" style={{ background: theme.soft, color: theme.deep }}>?</div>
@@ -196,15 +155,6 @@ function NodeQuiz({ node, theme }) {
         <div className="qz-startSub">{sub}</div>
         {seed && (
           <button className="qz-startBtn" onClick={startSeed} style={{ background: theme.deep }}>开始测验 →</button>
-        )}
-        {aiAvailable && (
-          <button className={seed ? 'qz-altBtn' : 'qz-startBtn'} onClick={generate}
-                  style={seed ? {} : { background: theme.deep }}>
-            {seed ? '🎲 AI 换一批' : '开始测验 →'}
-          </button>
-        )}
-        {!seed && !aiAvailable && (
-          <div className="qz-err">本节点暂无离线题库；联网并配置 DeepSeek 后可用 AI 出题。</div>
         )}
         {err && <div className="qz-err">{err}</div>}
       </div>
@@ -282,7 +232,6 @@ function NodeQuiz({ node, theme }) {
         </div>
         <div className="qz-resultActions">
           {seed && <button className="qz-startBtn" onClick={startSeed} style={{ background: theme.deep }}>再做一遍</button>}
-          {aiAvailable && <button className={seed ? 'qz-altBtn' : 'qz-startBtn'} onClick={generate} style={seed ? {} : { background: theme.deep }}>{seed ? '🎲 AI 换一批' : '再来 3 题'}</button>}
           <button className="qz-altBtn" onClick={restart}>关闭</button>
         </div>
       </div>

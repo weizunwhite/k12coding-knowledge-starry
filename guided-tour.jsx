@@ -82,8 +82,7 @@ function GuidedTour({ step, recommended, selectedId, onDismiss }) {
           <div className="gt-text">
             每个知识点有三个标签页：
             <br /><b>详解</b> — 概念、例题、易错点
-            <br /><b>测验</b> — AI 现场出题检验掌握度
-            <br /><b>AI 答疑</b> — 有问题随时问
+            <br /><b>测验</b> — 题库出题检验掌握度，答错自动进错题本
           </div>
           <button className="gt-btn" onClick={onDismiss}>开始探索</button>
         </div>

@@ -2,7 +2,6 @@
 // Slides in from the right when a node is selected. Three sections:
 //   · 概念 + 解释 + 例题
 //   · 与其他知识点的联系（前置 / 引出）
-//   · AI 答疑 — uses window.claude.complete
 // Receives: node, onClose, onJump(id) — for clicking a connected node.
 
 // 配图路径修正：数据文件里写的是 media/xxx.jpg（相对路径），而页面挂在
@@ -148,24 +147,14 @@ function NodeDetail({ node, onClose, onJump, mastered, onToggleMastery }) {
   const history = (window.CODE_HISTORY || {})[node.id];
   const lesson = (window.CODE_LESSON || {})[node.id];
   const warmup = lesson?.warmup;
-  const aiAvailable = !!(window.claude && typeof window.claude.complete === 'function');
-  const [tab, setTab] = useState('overview'); // 'overview' | 'ai'
+  const [tab, setTab] = useState('overview'); // 'overview' | 'quiz'
   const [lessonRevealed, setLessonRevealed] = useState(false); // 引入题后是否已展开讲解
-  const [messages, setMessages] = useState([]); // {role: 'user'|'assistant', text}
-  const [input, setInput] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [suggested, setSuggested] = useState([
-    `${node.name}是谁发明 / 发现的？`,
-    `${node.name}最早是为了解决什么问题？`,
-    `给我出一道关于${node.name}的题`,
-  ]);
   const [panelRect, setPanelRect] = useState(null);
   const [panelSize, setPanelSize] = useState('md');
   const [isMaximized, setIsMaximized] = useState(false);
   const panelRef = useRef(null);
   const savedRectRef = useRef(null);
   const pointerActionRef = useRef(null);
-  const msgEndRef = useRef(null);
   const scrollRef = useRef(null);
 
   // 移动端判定（≤720px）：决定详情面板是否走全屏 sheet
@@ -343,43 +332,12 @@ function NodeDetail({ node, onClose, onJump, mastered, onToggleMastery }) {
 
   useEffect(() => {
     // Reset on node change
-    setMessages([]);
-    setInput('');
     setTab('overview');
     setLessonRevealed(false);
     if (scrollRef.current) scrollRef.current.scrollTop = 0;
   }, [node.id]);
 
-  useEffect(() => {
-    if (msgEndRef.current) msgEndRef.current.scrollIntoView({ block: 'end' });
-  }, [messages, loading]);
 
-  const ask = async (question) => {
-    if (!question.trim() || loading) return;
-    if (!aiAvailable) {
-      setMessages([{ role: 'assistant', text: 'DeepSeek 暂未启用：请在本地环境配置 DEEPSEEK_API_KEY 后重启服务。知识讲解、公式、例题和互动组件仍可正常使用。' }]);
-      setInput('');
-      return;
-    }
-    const newMessages = [...messages, { role: 'user', text: question }];
-    setMessages(newMessages);
-    setInput('');
-    setLoading(true);
-    try {
-      const histLine = history ? `\n历史起源：${history.origin || ''}\n历史故事：${history.story || ''}` : '';
-      const ctx = `你是一位耐心、生动的编程老师。学生正在学习"${node.name}"这个知识点。\n知识点说明：${node.concept}。${node.explanation}\n例题：${node.example}${histLine}\n\n回答要求：\n- 只围绕「${node.name}」本身回答，不要扩展到其他知识点\n- 如果引用历史故事，只用上面给出的内容，不要编造或混入其他知识点的故事\n- 用中文回答，简洁清楚，控制在 180 字以内`;
-      const reply = await window.claude.complete({
-        messages: [
-          { role: 'user', content: ctx + '\n\n学生问：' + question },
-        ],
-      });
-      setMessages([...newMessages, { role: 'assistant', text: reply.trim() }]);
-    } catch (e) {
-      setMessages([...newMessages, { role: 'assistant', text: '抱歉，AI 暂时不可用 —— 请稍后再试。' }]);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   // Prereqs and "leads to" lists
   const prereqs = (node.prereqs || []).map(id => window.CODE_NODE_BY_ID[id]).filter(Boolean);
@@ -438,11 +396,6 @@ function NodeDetail({ node, onClose, onJump, mastered, onToggleMastery }) {
         <button className={'nd-tab' + (tab === 'overview' ? ' on' : '')} onClick={() => setTab('overview')}>详解</button>
         <button className={'nd-tab' + (tab === 'quiz' ? ' on' : '')} onClick={() => setTab('quiz')}>测验</button>
         {/* AI 答疑：仅在后端可用时出现，未接后端时不给学生看半成品入口 */}
-        {aiAvailable && (
-          <button className={'nd-tab' + (tab === 'ai' ? ' on' : '')} onClick={() => setTab('ai')}>
-            <span className="nd-aiIcon" aria-hidden>✦</span> AI 答疑
-          </button>
-        )}
       </div>
 
       <div className="nd-body" ref={scrollRef}>
@@ -699,69 +652,8 @@ function NodeDetail({ node, onClose, onJump, mastered, onToggleMastery }) {
           <window.NodeQuiz node={node} theme={theme} />
         )}
 
-        {tab === 'ai' && aiAvailable && (
-          <div className="nd-ai">
-            {!aiAvailable && (
-              <div className="nd-aiUnavailable">
-                <div className="nd-aiAvatar">✦</div>
-                <div className="nd-aiHello">
-                  DeepSeek 暂未启用。
-                </div>
-                <div className="nd-aiUnavailableText">
-                  请在本地环境配置 <code>DEEPSEEK_API_KEY</code> 后重启服务。默认模型为 <code>deepseek-v4-flash</code>，可用 <code>DEEPSEEK_MODEL</code> 覆盖。
-                </div>
-              </div>
-            )}
-            {aiAvailable && messages.length === 0 && !loading && (
-              <div className="nd-aiWelcome">
-                <div className="nd-aiAvatar">✦</div>
-                <div className="nd-aiHello">
-                  关于 <b>{node.name}</b>，想问什么？
-                </div>
-                <div className="nd-aiSuggestions">
-                  {suggested.map((q, i) => (
-                    <button key={i} className="nd-aiSuggest" onClick={() => ask(q)}>{q}</button>
-                  ))}
-                </div>
-              </div>
-            )}
-            {messages.map((m, i) => (
-              <div key={i} className={'nd-msg ' + m.role}>
-                {m.role === 'assistant' && <div className="nd-msgAvatar">✦</div>}
-                <div className="nd-msgBubble">{m.role === 'assistant' ? renderRich(m.text) : m.text}</div>
-              </div>
-            ))}
-            {loading && (
-              <div className="nd-msg assistant">
-                <div className="nd-msgAvatar">✦</div>
-                <div className="nd-msgBubble">
-                  <span className="nd-thinking">
-                    <span></span><span></span><span></span>
-                  </span>
-                </div>
-              </div>
-            )}
-            <div ref={msgEndRef}></div>
-          </div>
-        )}
       </div>
 
-      {tab === 'ai' && aiAvailable && (
-        <div className="nd-aiInputWrap">
-          <input
-            className="nd-aiInput"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && ask(input)}
-            disabled={!aiAvailable}
-            placeholder={aiAvailable ? `问关于"${node.name}"的问题…` : 'DeepSeek 未配置'}
-          />
-          <button className="nd-aiSend" onClick={() => ask(input)} disabled={!aiAvailable || !input.trim() || loading}
-                  style={{ background: aiAvailable && input.trim() && !loading ? theme.deep : '#e5e5e5' }}>
-            →
-          </button>
-        </div>
-      )}
       {!isMaximized && !isMobile && (
         <>
           <div className="nd-resizeHandle nd-resizeHandle-e" onPointerDown={(e) => startPanelResize('e', e)} />
